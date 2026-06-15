@@ -1,7 +1,26 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Recipe } from "@/lib/useRecipes";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
+// Lazy-load client initialization to prevent top-level errors if API key is missing during build/deploy
+let aiInstance: GoogleGenAI | null = null;
+
+function getAIClient(): GoogleGenAI {
+  if (!aiInstance) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "YOUR_GEMINI_API_KEY") {
+      throw new Error("GEMINI_API_KEY is not configured. Please add your key to Settings > Secrets or your environment.");
+    }
+    aiInstance = new GoogleGenAI({ 
+      apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build'
+        }
+      }
+    });
+  }
+  return aiInstance;
+}
 
 export interface RescaledRecipeData {
   ingredients: string[];
@@ -28,8 +47,8 @@ export async function parseRecipeText(text: string): Promise<ParsedRecipeData> {
     Return the result in JSON format.
   `;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+  const response = await getAIClient().models.generateContent({
+    model: "gemini-3.5-flash",
     contents: prompt,
     config: {
       responseMimeType: "application/json",
@@ -70,8 +89,8 @@ export async function rescaleRecipe(recipe: Recipe, targetServings: number): Pro
     Return the result in JSON format.
   `;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+  const response = await getAIClient().models.generateContent({
+    model: "gemini-3.5-flash",
     contents: prompt,
     config: {
       responseMimeType: "application/json",
@@ -121,8 +140,8 @@ export async function generateBatchRecipes(count: number = 10): Promise<ParsedRe
     Return the result as an array of JSON objects.
   `;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+  const response = await getAIClient().models.generateContent({
+    model: "gemini-3.5-flash",
     contents: prompt,
     config: {
       responseMimeType: "application/json",

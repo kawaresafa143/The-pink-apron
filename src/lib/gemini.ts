@@ -1,7 +1,25 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Initialize the Gemini API
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// Lazy-load client initialization to prevent top-level errors if API key is missing during build/deploy
+let aiInstance: GoogleGenAI | null = null;
+
+function getAIClient(): GoogleGenAI {
+  if (!aiInstance) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "YOUR_GEMINI_API_KEY") {
+      throw new Error("GEMINI_API_KEY is not configured. Please add your key to Settings > Secrets or your environment.");
+    }
+    aiInstance = new GoogleGenAI({ 
+      apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build'
+        }
+      }
+    });
+  }
+  return aiInstance;
+}
 
 // Global state to track quota status and prevent spamming when limited
 let isQuotaExceeded = false;
@@ -343,7 +361,7 @@ export async function generateRecipeImage(title: string, descriptionOrCategory?:
 
   try {
     return await withRetry(async () => {
-      const response = await ai.models.generateContent({
+      const response = await getAIClient().models.generateContent({
         model: 'gemini-2.5-flash-image',
         contents: {
           parts: [{ text: prompt }],
@@ -384,8 +402,8 @@ export async function searchTrendingRecipes(query: string, recipes: any[]) {
 
   try {
     return await withRetry(async () => {
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+      const response = await getAIClient().models.generateContent({
+        model: "gemini-3.5-flash",
         contents: prompt,
         config: { responseMimeType: "application/json" },
       });
@@ -420,8 +438,8 @@ export async function extractRecipeFromUrl(url: string) {
 
   try {
     return await withRetry(async () => {
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+      const response = await getAIClient().models.generateContent({
+        model: "gemini-3.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
