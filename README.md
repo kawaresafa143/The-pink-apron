@@ -76,34 +76,6 @@ Cooking is far more than just a set of instructions; it is an expression of care
 
 ---
 
-## 💻 Local Quickstart
-
-### Prerequisites
-* **Node.js** (v18 or higher recommended)
-* A **Gemini API Key** from [Google AI Studio](https://aistudio.google.com)
-
-### Installation
-
-1. **Clone the project & install dependencies:**
-   ```bash
-   npm install
-   ```
-
-2. **Configure Environment Variables:**
-   Create a `.env` file in the root directory (based on `.env.example`):
-   ```env
-   GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
-   APP_URL="http://localhost:3000"
-   ```
-
-3. **Run Dev Environment Server:**
-   ```bash
-   npm run dev
-   ```
-   Open `http://localhost:3000` to start cooking!
-
----
-
 ## 🌸 Summary of Aesthetic Choices
 * **Palette:** Built with luxurious blush pastel pinks (`#fdf2f8`, `#fbcfe8`, `#db2777`), balanced by soft warm white backgrounds and deep slate-charcoal text pairings.
 * **Typography:** Featuring **Space Grotesk** display titles (delivering a gorgeous, artisanal editorial posture) side-by-side with highly legible **Inter** sans-serif body text.
